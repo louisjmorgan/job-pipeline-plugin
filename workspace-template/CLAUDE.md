@@ -9,7 +9,7 @@ criteria → search (`/job-pipeline:find-jobs`) → tailored CV, answers and let
   and `criteria.yaml` (what to look for).
 - Never invent facts, numbers or experience. If a fact would help, ask the user.
 - Never submit an application, email anyone or fill in a form. The user sends everything.
-- Tools: `jp` is the plugin's command line (the skills give its full path). After changing a job's
+- Tools: `jp` is the plugin's command line (its full path is given at session start and in each skill). After changing a job's
   drafts: `jp build --job=<id>` and `jp lint <id>`, then republish its review page if it has one
   (`review_url` in job.md), then commit.
 

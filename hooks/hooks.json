@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo \"job-pipeline plugin: in this session, jp means: node \\\"${CLAUDE_PLUGIN_ROOT}/src/jp.js\\\" (run from the workspace, the folder with profile/). No profile/ folder yet? Suggest /job-pipeline:setup.\""
+          }
+        ]
+      }
+    ]
+  }
+}
