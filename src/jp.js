@@ -7,6 +7,7 @@
 //   jp lint [<id>…]                 claims lint            jp search [--source=s] run the feeds
 //   jp leads [promote|reject|import …]                     jp scrub               strip tracking tokens
 //   jp preview                      live preview server    jp review <id> [--out=file]  static review page
+//   jp board [--out=file]           jobs board page (all jobs, links to review pages)
 //   jp init [dir]                   start a workspace      jp where               show paths
 //
 // Dependencies are installed on first run into a cache (CLAUDE_PLUGIN_DATA when Claude Code
@@ -32,6 +33,7 @@ const COMMANDS = {
   scrub: ['src/jobs/scrub.js'],
   preview: ['src/cv/server.js'],
   review: ['src/cv/review-page.js'],
+  board: ['src/cv/board-page.js'],
 };
 
 function sleep(ms) {
@@ -97,7 +99,7 @@ function init(target = '.') {
 
 const [cmd, ...rest] = process.argv.slice(2);
 if (!cmd || cmd === 'help' || cmd === '--help') {
-  console.log(readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').filter((l) => l.startsWith('//')).slice(0, 10).map((l) => l.slice(3)).join('\n'));
+  console.log(readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').filter((l) => l.startsWith('//')).slice(0, 11).map((l) => l.slice(3)).join('\n'));
   process.exit(0);
 }
 if (cmd === 'init') {

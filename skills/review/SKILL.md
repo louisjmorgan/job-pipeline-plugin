@@ -1,6 +1,6 @@
 ---
 name: review
-description: Publish or refresh a job's review page as a claude.ai Artifact — one page with the pitch, the questions for the user, the tailored CV in its real template, the cover letter, the written answers and the listing — so the user can read it on claude.ai and give feedback in chat. Use after tailoring, after any change to a job's drafts, or when the user says "review <job>", "show me the <job> application", "publish the review page" or "/review <id>".
+description: Publish or refresh a job's review page (and the jobs board that links them all) as a claude.ai Artifact — one page with the pitch, the questions for the user, the tailored CV in its real template, the cover letter, the written answers and the listing — so the user can read it on claude.ai and give feedback in chat. Use after tailoring, after any change to a job's drafts or status, or when the user says "review <job>", "show me the <job> application", "publish the review page", "show the board" or "/review <id>".
 ---
 
 # Review page
@@ -42,3 +42,18 @@ One line with the link, the number of open questions for them, and the closing d
 they give about the page is handled as the workspace CLAUDE.md says ("Learning from feedback"):
 apply it to the files, rebuild and lint, record general lessons, then come back here and
 republish to the same URL.
+
+## 4. The jobs board
+
+After publishing any review page, or changing any job's status, refresh the board: one page
+listing every job (status, fit, pay, closing date, open questions) linking to each review page.
+
+```bash
+jp board --out=<scratchpad or temp dir>/board.html
+```
+
+Its URL is in `board.json` at the workspace root (`{"url": "…"}`). With no `board.json`, publish
+the file (`icon: "list"`, description "Every job in the search with status, fit, closing date and
+open questions, linking to each review page") and write the URL to `board.json`; commit it.
+Otherwise publish to that `url` (read it first if this conversation hasn't), so the link the user
+bookmarked stays the same.

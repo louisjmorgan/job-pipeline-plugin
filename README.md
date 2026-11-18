@@ -81,6 +81,7 @@ jp lint <id>                  # check drafts against profile/facts.md
 jp search                     # run the feeds into leads/inbox.jsonl
 jp preview                    # http://localhost:3000/jobs, live-reloading
 jp review <id>                # self-contained review page (what /review publishes)
+jp board                      # jobs board page: every job, linking to its review page
 jp where                      # which workspace and plugin are in use
 ```
 

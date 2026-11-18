@@ -12,7 +12,7 @@ A job the skill stops on (score 2 or lower) stays as the skill leaves it.
 
 4. When they finish, for each job: check that `jp lint <id>` is clean, then run `git add jobs/<id>` and commit `tailor <id>: drafted (<n>/5)`. Then run `git pull --rebase --autostash origin main` and push to main. Never commit .env, node_modules or out/ folders.
 
-5. Append a `### Tailored` section to leads/runs/<today>.md, with one line per job: id, score, pitch, review page link and questions for the user. Add any shortlisted jobs left for the next run. Commit and push it.
+5. Refresh the jobs board, following section 4 of <plugin root>/skills/review/SKILL.md, if an Artifact tool is available. Then append a `### Tailored` section to leads/runs/<today>.md, with one line per job: id, score, pitch, review page link and questions for the user. Add any shortlisted jobs left for the next run. Commit and push it.
 
 6. End with a short summary:
 - the new shortlist (score, salary, location and work pattern, closing date)
