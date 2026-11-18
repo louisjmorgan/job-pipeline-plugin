@@ -17,11 +17,20 @@ export async function listTemplates() {
 }
 
 // Variant `theme` keys become CSS custom properties: { "accent": "#c00" } -> --accent: #c00
-function themeCss(theme = {}) {
+export function themeCss(theme = {}) {
   const decls = Object.entries(theme)
     .filter(([k]) => /^[\w-]+$/.test(k))
     .map(([k, v]) => `  --${k}: ${String(v).replace(/[;{}<]/g, '')};`);
   return decls.length ? `\n:root {\n${decls.join('\n')}\n}\n` : '';
+}
+
+// Variant `fonts`: Google Fonts families to load, e.g. ["Inter:wght@400;600", "Lora:ital@0;1"].
+// Pair with theme `font-body` (and a template's other font variables) to use them.
+export function fontLinks(fonts = []) {
+  const families = (Array.isArray(fonts) ? fonts : [fonts]).filter((f) => /^[\w +:;@,.]+$/.test(f));
+  if (!families.length) return '';
+  const query = families.map((f) => `family=${encodeURIComponent(f).replace(/%20/g, '+').replace(/%3A/g, ':').replace(/%40/g, '@').replace(/%3B/g, ';').replace(/%2C/g, ',')}`).join('&');
+  return `<link rel="stylesheet" href="https://fonts.googleapis.com/css2?${query}&display=swap">\n`;
 }
 
 /**
@@ -57,7 +66,7 @@ export async function renderCv({ variant: variantName = 'main', job, template: t
     variant,
     template,
     esc: ejs.escapeXML,
-    styles: `<style>\n${css}${themeCss(variant.theme)}</style>`,
+    styles: `${fontLinks(variant.fonts)}<style>\n${css}${themeCss(variant.theme)}</style>`,
   };
   const html = await ejs.renderFile(path.join(dir, 'index.ejs'), data, { async: false });
   return { html, template, kind: target.kind, name: target.name, warnings, cv };

@@ -15,6 +15,8 @@ import ejs from 'ejs';
 import { marked } from 'marked';
 import { parse as parseYaml } from 'yaml';
 import { parseCv } from './parse.js';
+import { fontLinks, themeCss } from './render.js';
+import { loadTarget } from './variant.js';
 import { CV_FILE, jobDir, templateDir } from '../paths.js';
 import { readJob } from '../jobs/job.js';
 
@@ -43,11 +45,12 @@ export function letterText(body) {
 }
 
 export async function renderLetter({ job }) {
-  const [cvSource, letter, jobFile, css] = await Promise.all([
+  const [cvSource, letter, jobFile, css, target] = await Promise.all([
     readFile(CV_FILE, 'utf8'),
     readLetter(job),
     readJob(job).catch(() => ({ meta: {} })),
     readFile(path.join(LETTER_TEMPLATE, 'style.css'), 'utf8'),
+    loadTarget({ job }).catch(() => ({ variant: {} })), // the letter shares the CV's theme and fonts
   ]);
   const { meta } = parseCv(cvSource);
   const date =
@@ -62,7 +65,7 @@ export async function renderLetter({ job }) {
       html: marked.parse(letter.body),
     },
     esc: ejs.escapeXML,
-    styles: `<style>\n${css}</style>`,
+    styles: `${fontLinks(target.variant.fonts)}<style>\n${css}${themeCss(target.variant.theme)}</style>`,
   });
   return { html, meta, letterMeta: letter.meta, text: letterText(letter.body) };
 }

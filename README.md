@@ -39,6 +39,8 @@ must never claim, what you're looking for, and job board API keys. Then:
 | `/job-pipeline:tailor <id>` | Requirements, fit score, tailored CV, written answers, cover letter if needed, `review.md` |
 | `/job-pipeline:review <id>` | Publishes the job's review page as a claude.ai Artifact: pitch, questions for you, CV, answers |
 | `/job-pipeline:learn [<id>]` | Learns from edits you made by hand; tidies your preferences |
+| `/job-pipeline:cv-style` | Changes the layout, colours and fonts of your CV and letters, or builds a custom template |
+| `/job-pipeline:schedule` | Sets up daily cloud runs: search every morning, tailor what's shortlisted |
 
 Review by chatting: open the review page, then tell Claude what to change ("lead with the
 outcome in answer 2", "never call it a platform"). Claude edits the drafts, lints them against your
@@ -86,10 +88,10 @@ Run from anywhere inside the workspace, or set `JOB_PIPELINE_HOME`.
 
 ## Scheduled runs
 
-A claude.ai routine (`/schedule`) can run `/job-pipeline:find-jobs` (and tailoring) every morning
-against your workspace repo. Put the API keys in the cloud environment's variables, set its
-network access to Full (the research agents read employer sites), and have the routine enable this
-plugin.
+`/job-pipeline:schedule` sets up claude.ai routines that run the search (and tailoring) every
+morning against your workspace repo, and walks you through what they need: the workspace on
+GitHub (private), Claude's GitHub app given access, and a cloud environment with your API keys and
+network access set to Full. The routine prompt is `skills/schedule/routine-prompt.md`.
 
 ## Jobs
 
@@ -269,7 +271,12 @@ picks a template and filters content. **It never controls order.**
 | `sections.<id>.include`              | `false` drops the whole section. Default is `true`.           |
 | `sections.<id>.exclude_items`        | entry ids to drop from that section                           |
 | `theme`                              | optional; each key becomes a CSS custom property (`accent` → `--accent`) that overrides the template's default |
+| `fonts`                              | optional; Google Fonts families to load, e.g. `["Lora:ital,wght@0,400;0,600;1,400"]`, used via `theme` (`"font-body": "'Lora', serif"`) |
 | `description`                        | optional note, ignored by the renderer                        |
+
+**House style.** `variants/main.json`'s `template`, `theme` and `fonts` are the default look for
+every job's CV and cover letter: a job's `variant.json` inherits them unless it sets its own
+(theme keys merge, the job's winning). Change the look once there, or ask `/job-pipeline:cv-style`.
 
 Sections a variant doesn't mention are **included**, so `{ "template": "modern" }` alone means
 "everything". A template can still leave out sections it doesn't place. To add a variant,

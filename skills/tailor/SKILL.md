@@ -72,8 +72,10 @@ If the score is 2 or lower, stop after this step and tell the user why.
 
 ### 3. CV: `variant.json` + `overlay.md`
 
-- `variant.json`: `"template": "modern-single-column"` (single column, ATS-safe) unless there's a
-  reason not to. Exclude entries that don't serve this role. **The CV must fit two pages.**
+- `variant.json`: leave out `template`, `theme` and `fonts`, so the CV and letter take the
+  user's house style from `variants/main.json` (see the cv-style skill). Set them only if this
+  job needs a different look and say why in `description`. Exclude entries that don't serve this
+  role. **The CV must fit two pages.**
   `description` says what the pitch is and what was dropped.
 - `overlay.md` starts with an HTML comment: the role, what it asks for, the gaps, a "Do not
   claim" list, and pointers to `answers.md`. Then only what changes, by id (see

@@ -6,7 +6,7 @@ import path from 'node:path';
 import { JOBS_DIR, VARIANTS_DIR, jobDir } from '../paths.js';
 import { parseCv } from './parse.js';
 
-const VARIANT_KEYS = new Set(['template', 'sections', 'theme', 'description']);
+const VARIANT_KEYS = new Set(['template', 'sections', 'theme', 'fonts', 'description']);
 const RULE_KEYS = new Set(['include', 'exclude_items']);
 
 const rel = (file) => path.relative(process.cwd(), file);
@@ -43,12 +43,26 @@ async function readJson(file, label) {
  * @param {{ variant?: string, job?: string }} opts  exactly one of the two
  * @returns {Promise<{ kind: 'variant'|'job', name: string, variant: object, overlay: object|null }>}
  */
+/**
+ * A job's CV takes its look from the house style, variants/main.json (template, theme, fonts),
+ * unless its own variant.json sets them. Theme keys merge, the job's winning.
+ */
+async function withHouseStyle(config) {
+  const house = await readFile(path.join(VARIANTS_DIR, 'main.json'), 'utf8').then(JSON.parse).catch(() => ({}));
+  return {
+    ...config,
+    template: config.template ?? house.template,
+    theme: { ...(house.theme ?? {}), ...(config.theme ?? {}) },
+    fonts: config.fonts ?? house.fonts,
+  };
+}
+
 export async function loadTarget({ variant, job }) {
   if (job) {
     const dir = jobDir(job);
     const config = await readJson(path.join(dir, 'variant.json'), `Variant for job "${job}"`);
     const source = await readFile(path.join(dir, 'overlay.md'), 'utf8').catch(() => null);
-    return { kind: 'job', name: job, variant: { name: job, ...config }, overlay: source && parseCv(source) };
+    return { kind: 'job', name: job, variant: { name: job, ...(await withHouseStyle(config)) }, overlay: source && parseCv(source) };
   }
   if (!variant || !/^[\w-]+$/.test(variant)) throw new Error(`Invalid variant name "${variant}"`);
   const config = await readJson(path.join(VARIANTS_DIR, `${variant}.json`), `Variant "${variant}"`);

@@ -42,8 +42,15 @@ LinkedIn-style extras if they have them.
   size), outcomes with numbers, tools, what they personally did vs the team. Write it to
   `profile/evidence.md`, one `##` per role or project. Two or three questions per role is
   plenty; tell them they can add more any time.
-- Build it: `jp build` (the generic `variants/main.json` CV) and tell them where the PDF is. If
-  it runs past two pages, offer to exclude older entries in `variants/main.json`.
+- **Pick a look.** Build the CV in each built-in template (`jp build --variant=main
+  --template=modern-single-column`, `…=modern`, `…=classic`) and give them the PDF paths:
+  single column is the safest for applicant tracking systems; `modern` has a sidebar; `classic`
+  is serif and traditional. Ask about an accent colour or font too. Save the choice in
+  `variants/main.json` (`template`, `theme`, `fonts`; the cv-style skill,
+  `${CLAUDE_PLUGIN_ROOT}/skills/cv-style/SKILL.md`, has the details and can build a custom
+  layout). Every tailored CV and cover letter uses this house style.
+- Build it: `jp build` and tell them where the PDF is. If it runs past two pages, offer to
+  exclude older entries in `variants/main.json`.
 
 ## 3. Facts and limits → `profile/facts.md`
 
@@ -95,5 +102,5 @@ environment's variables instead.
 - Commit everything (`git add -A && git commit -m "Set up job search workspace"`), excluding `.env`.
 - Tell them what's next, in a few lines: `/job-pipeline:find-jobs` to search (add `broad` for the
   research agents), `/job-pipeline:tailor <id>` to draft an application, `/job-pipeline:review <id>`
-  for the review page, and that feedback in chat is remembered in `profile/preferences.md`.
-- Offer to set up a scheduled daily search (the `/schedule` skill), if their workspace is on GitHub.
+  for the review page, `/job-pipeline:cv-style` to change the look, and that feedback in chat is remembered in `profile/preferences.md`.
+- Offer scheduled daily searches: `/job-pipeline:schedule` walks them through it.

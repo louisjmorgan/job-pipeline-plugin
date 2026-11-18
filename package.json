@@ -1,6 +1,6 @@
 {
   "name": "job-pipeline",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Job search pipeline for Claude Code: criteria -> search -> tailored CV, answers and letters -> your review",
   "type": "module",
   "scripts": {
