@@ -1,0 +1,9 @@
+# Companies whose job boards are checked directly on every search, through the ATS's public API:
+# no key, full listings. /job-pipeline:find-jobs adds companies it discovers.
+#
+#   - name: Example Ltd
+#     ats: greenhouse        # greenhouse | lever | ashby
+#     board: example         # the board token in the careers URL
+#     why: remote UK, TypeScript     # optional note
+
+companies: []

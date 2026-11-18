@@ -1,0 +1,148 @@
+/* Modern — two columns on page 1, single column after (see script in index.ejs); sans-serif, accent colour.
+   Theme via CSS custom properties (override per variant with "theme": { "accent": "#123" }).
+   Page 1: header and columns share one grid, with the side rule running from the header down.
+   Continuation pages are a single full-width column. */
+:root {
+  --font-body: 'Instrument Sans', 'Helvetica Neue', Arial, sans-serif;
+  --ink: #1a1d1c;
+  --muted: #5a625f;
+  --accent: #12606a;
+  --rule: #d5dbd9;
+  --paper: #fff;
+  --base-size: 8.8pt;
+  --side-width: 58mm;
+  --gutter: 7mm;          /* main column → side rule */
+  --side-inset: 5.5mm;    /* side rule → side text */
+  --condensed: 80%;       /* font-stretch for the name and section headings */
+}
+
+/* ---------- Page ---------- */
+@page { size: A4; margin: 12mm 13mm 12mm; } /* top + bottom must match PAGE_CONTENT_HEIGHT in index.ejs */
+
+* { box-sizing: border-box; }
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--base-size);
+  line-height: 1.42;
+  color: var(--ink);
+  background: var(--paper);
+  font-kerning: none; /* the font's kerning pulls mid-word dots (example.org, Next.js) in tight; re-enabled on headings */
+  word-spacing: .05em; /* Instrument Sans sets tight at CV sizes */
+}
+a { color: inherit; text-decoration: none; }
+strong { font-weight: 600; }
+
+@media screen {
+  body { background: #e3e7e6; padding: 24px 0 96px; }
+  .page {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 0 auto;
+    padding: 12mm 13mm 12mm;
+    background: var(--paper);
+    box-shadow: 0 1px 2px rgb(20 30 28 / .08), 0 10px 30px rgb(20 30 28 / .1);
+  }
+  a:hover { color: var(--accent); }
+  a:focus-visible { outline: 1.5pt solid var(--accent); outline-offset: 1pt; border-radius: 1pt; }
+}
+
+/* ---------- Shared grid ---------- */
+.cv-header, .columns {
+  display: grid;
+  grid-template-columns: 1fr var(--side-width);
+  column-gap: var(--gutter);
+}
+.columns--single { grid-template-columns: 1fr; }
+.contact, .col-side { border-left: .75pt solid var(--rule); padding-left: var(--side-inset); }
+
+/* ---------- Header ---------- */
+/* Space below the header lives inside its cells, so the contact rule meets the sidebar rule without a gap. */
+.identity, .contact { padding-bottom: 14pt; }
+.identity { align-self: end; }
+.cv-header h1 {
+  font-kerning: normal;
+  margin: 0;
+  font-size: 30pt;
+  font-weight: 700;
+  font-stretch: var(--condensed);
+  letter-spacing: -.012em;
+  line-height: .92;
+}
+.headline { margin: 5pt 0 0; font-size: 11pt; font-weight: 500; color: var(--accent); }
+.contact {
+  list-style: none;
+  margin: 0;
+  padding-top: 1pt;
+  font-size: 8.4pt;
+  line-height: 1.6;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+.cv-header:has(+ .columns--single) { padding-bottom: 12pt; border-bottom: .75pt solid var(--rule); margin-bottom: 12pt; }
+
+/* ---------- Continuation pages (created by the pagination script) ---------- */
+.page--continued { break-before: page; }
+@media screen { .page--continued { margin-top: 24px; min-height: 0; } }
+
+/* ---------- Sections ---------- */
+.section { margin-bottom: 11pt; }
+/* Trailing margins would make page 1 taller than the pagination script measures */
+.col-main > .section:last-child, .col-side > .section:last-child, .section > .entry:last-child { margin-bottom: 0; }
+.section h2 {
+  font-kerning: normal;
+  margin: 0 0 5pt;
+  font-size: 11.5pt;
+  font-weight: 650;
+  font-stretch: var(--condensed);
+  line-height: 1.2;
+  color: var(--accent);
+  break-after: avoid;
+}
+.section-intro p { margin: 0 0 5pt; }
+.section-intro p:last-child { margin-bottom: 0; }
+
+/* Bullets: a short accent dash drawn in CSS, so copied/extracted text carries no stray glyphs */
+.section-intro ul, .entry-body ul { list-style: none; margin: 3pt 0 0; padding-left: 1.05em; }
+.section-intro li, .entry-body li { position: relative; margin: 2pt 0; break-inside: avoid; }
+.section-intro li::before, .entry-body li::before {
+  content: '';
+  position: absolute;
+  left: -1.05em;
+  top: .7em;
+  width: .5em;
+  height: .9pt;
+  background: var(--accent);
+}
+
+/* ---------- Entries ---------- */
+.entry { margin-bottom: 9pt; break-inside: avoid; }
+.entry:has(> .entry-body > ul:only-child) { break-inside: auto; } /* bullet-list entries may split between bullets */
+.entry-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10pt; break-after: avoid; }
+.entry h3 { margin: 0; font-size: 10pt; font-weight: 600; line-height: 1.3; }
+.dates { flex-shrink: 0; font-size: 8.4pt; color: var(--muted); font-variant-numeric: tabular-nums; }
+.entry-sub { margin: .5pt 0 0; font-size: 8.5pt; color: var(--muted); display: flex; flex-wrap: wrap; gap: 0 1em; }
+.entry-sub .org { color: var(--ink); font-weight: 500; }
+.entry-body p { margin: 3pt 0 0; }
+.entry-body code { font-size: .92em; }
+
+/* Tech lists read as plain text, not chips */
+.tags {
+  list-style: none;
+  margin: 3pt 0 0;
+  padding: 0;
+  font-size: 8.2pt;
+  color: var(--muted);
+}
+.tags li { display: inline; }
+.tags li:not(:last-child)::after { content: ', '; }
+
+/* Sidebar entries are denser */
+.section--side .entry { margin-bottom: 6.5pt; }
+.section--side .entry h3 { font-size: 8.8pt; }
+.section--side .entry-sub { font-size: 8.4pt; gap: 0 .8em; }
+.section--side .entry-body { font-size: 8.5pt; }
+.section--side .entry-body p { margin-top: 1pt; }

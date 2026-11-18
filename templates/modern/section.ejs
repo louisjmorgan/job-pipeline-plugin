@@ -1,0 +1,29 @@
+<section class="section section--<%= section.id %> section--<%= column %>" id="<%= section.id %>">
+  <h2><%= section.title %></h2>
+  <% if (section.html) { %><div class="section-intro"><%- section.html %></div><% } %>
+
+  <% for (const entry of section.entries) { const m = entry.meta; %>
+    <article class="entry" id="<%= entry.id %>">
+      <header class="entry-head">
+        <h3><%= entry.title %></h3>
+        <% if (m.dates && column === 'main') { %><span class="dates"><%= m.dates %></span><% } %>
+      </header>
+      <% if (m.org || m.location || m.link || (m.dates && column === 'side')) { %>
+        <p class="entry-sub">
+          <% if (m.org) { %><span class="org"><%= m.org %></span><% } %>
+          <% if (m.location) { %><span><%= m.location %></span><% } %>
+          <% if (m.dates && column === 'side') { %><span><%= m.dates %></span><% } %>
+          <% if (m.link) { %><a href="https://<%= m.link.replace(/^https?:\/\//, '') %>"><%= m.link %></a><% } %>
+        </p>
+      <% } %>
+      <% if (m.short && column === 'side') { %>
+        <div class="entry-body"><p><%= m.short %></p></div>
+      <% } else { %>
+        <div class="entry-body"><%- entry.html %></div>
+      <% } %>
+      <% if (m.tech) { %>
+        <ul class="tags"><% for (const t of m.tech.split(/\s*[·,|]\s*/)) { %><li><%= t %></li><% } %></ul>
+      <% } %>
+    </article>
+  <% } %>
+</section>

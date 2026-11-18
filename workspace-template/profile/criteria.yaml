@@ -1,0 +1,41 @@
+# What to look for. Read by `jp search` (feed filters) and /job-pipeline:find-jobs (agentic
+# search and screening). Edit freely; the next run picks it up.
+
+salary_floor: 40000          # a year, full-time equivalent. Pro-rata part-time at or above this is fine.
+max_age_days: 21             # ignore listings older than this (when the source gives a date)
+
+location:
+  home: Leeds                # feeds search around here (UK job boards for now)
+  radius_miles: 20
+  # Office or hybrid roles must mention one of these places.
+  commutable: [Leeds, Bradford, Wakefield, Harrogate, West Yorkshire]
+  remote: UK                 # fully remote anywhere in the UK is fine; leave empty if not wanted
+  relocation: false
+
+work_pattern:
+  full_time: ok
+  part_time: ok              # "very interested" flags it in the digest and boosts the score
+  four_day_week: ok
+
+roles:
+  # Feed results must match at least one of these in the title (case-insensitive).
+  titles: [software engineer, software developer, full stack, frontend, backend, web developer]
+  # Titles containing any of these are dropped.
+  exclude_titles: [junior, graduate, intern, apprentice, trainee, recruiter, sales]
+  # Essential-requirement red flags: not filtered out, but screening scores them down.
+  weak_spots: []
+
+interests:                   # boost in screening; also the research angles in broad mode
+  - example: public sector and charities
+
+# Queries for the API feeds. Each runs around location.home and, if remote is set, as a remote search.
+queries: [software engineer, full stack developer]
+
+sources:
+  reed:     { enabled: true }        # needs REED_API_KEY (free: reed.co.uk/developers)
+  adzuna:   { enabled: true }        # needs ADZUNA_APP_ID + ADZUNA_APP_KEY (free: developer.adzuna.com)
+  jobspipe: { enabled: false, credit_budget: 1000, per_run_limit: 10 }  # needs JOBSPIPE_API_KEY; free credits are one-time
+  watchlist: { enabled: true }       # profile/watchlist.yaml: company boards on Greenhouse, Lever, Ashby
+  rss:
+    enabled: true
+    feeds: []                        # RSS/Atom feed URLs, e.g. a jobs.ac.uk search feed

@@ -1,0 +1,24 @@
+{
+  "name": "job-pipeline",
+  "version": "0.1.0",
+  "description": "Job search pipeline for Claude Code: criteria -> search -> tailored CV, answers and letters -> your review",
+  "type": "module",
+  "scripts": {
+    "postinstall": "playwright install chromium"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "ejs": "^6.0.1",
+    "marked": "^18.0.14",
+    "pdf-parse": "^2.4.5",
+    "pdfjs-dist": "^5.4.296",
+    "playwright": "^1.63.0",
+    "yaml": "^2.9.1"
+  },
+  "bin": {
+    "jp": "src/jp.js"
+  },
+  "private": true
+}

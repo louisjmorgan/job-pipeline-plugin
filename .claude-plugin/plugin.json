@@ -1,0 +1,10 @@
+{
+  "name": "job-pipeline",
+  "displayName": "Job Pipeline",
+  "version": "0.1.0",
+  "description": "Your job search in Claude Code: set up your CV and criteria, find and screen jobs, tailor CVs, answers and cover letters, review drafts on a page, and learn from your feedback. You always send applications yourself.",
+  "author": { "name": "Louis Morgan" },
+  "repository": "https://github.com/louisjmorgan/job-pipeline-plugin",
+  "license": "MIT",
+  "keywords": ["jobs", "cv", "resume", "job-search", "cover-letter"]
+}

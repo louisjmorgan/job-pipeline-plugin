@@ -1,0 +1,43 @@
+<%#
+  Modern, single column — same accent colour and sans-serif voice as modern, built from scratch
+  for one full-width column instead of a page-1 sidebar (modern's type scale and condensed
+  header were tuned for a narrow side column and don't hold up stretched full-width).
+  Receives: cv, meta, sections, others(), variant, template, styles, esc  (see README "Template interface")
+  Section order is defined HERE; anything not listed in `order` is appended at the end.
+-%>
+<%
+  const order = ['summary', 'experience', 'projects', 'skills', 'education', 'other'];
+  const compact = ['skills'];
+  const placed = [...order.map((id) => sections[id]).filter(Boolean), ...others(...order)];
+  const contact = [
+    meta.email && `<a href="mailto:${esc(meta.email)}">${esc(meta.email)}</a>`,
+    meta.phone && `<a href="tel:${esc(meta.phone.replace(/\s+/g, ''))}">${esc(meta.phone)}</a>`,
+    meta.location && esc(meta.location),
+    ...(meta.links ?? []).map((l) => `<a href="${esc(l.url)}">${esc(l.label ?? l.url)}</a>`),
+  ].filter(Boolean);
+-%>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= meta.name %> — CV</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wdth,wght@75..100,400..700&display=swap">
+  <%- styles %>
+</head>
+<body>
+  <main class="page">
+    <header class="cv-header">
+      <h1><%= meta.name %></h1>
+      <% if (meta.title) { %><p class="headline"><%= meta.title %></p><% } %>
+      <p class="contact"><%- contact.join('<span class="sep">•</span>') %></p>
+    </header>
+
+    <% for (const section of placed) { %>
+      <%- include('section', { section, compact: compact.includes(section.id) }) %>
+    <% } %>
+  </main>
+</body>
+</html>

@@ -1,0 +1,42 @@
+<section class="section section--<%= section.id %>" id="<%= section.id %>">
+  <%# The heading travels with its first entry (or the whole compact list) so it can never be
+      left alone at the bottom of a page; h2 break-after: avoid alone isn't honoured by Chromium
+      when the next block is an unbreakable entry. %>
+  <div class="section-lead">
+  <h2><%= section.title %></h2>
+  <% if (section.html) { %><div class="section-intro"><%- section.html %></div><% } %>
+
+  <% if (compact) { %>
+    <dl class="compact-list">
+      <% for (const entry of section.entries) { %>
+        <div class="compact-row" id="<%= entry.id %>">
+          <dt><%= entry.title %></dt>
+          <dd><%- entry.html %></dd>
+        </div>
+      <% } %>
+    </dl>
+  </div>
+  <% } else { %>
+    <% if (!section.entries.length) { %></div><% } %>
+    <% section.entries.forEach((entry, i) => { const m = entry.meta; %>
+      <article class="entry" id="<%= entry.id %>">
+        <header class="entry-head">
+          <h3><%= entry.title %></h3>
+          <% if (m.dates) { %><span class="dates"><%= m.dates %></span><% } %>
+        </header>
+        <% if (m.org || m.location || m.link) { %>
+          <p class="entry-sub">
+            <% if (m.org) { %><span class="org"><%- m.org.split(/\s*·\s*/).map(esc).join('<span class="sep">•</span>') %></span><% } %>
+            <% if (m.location) { %><span><%= m.location %></span><% } %>
+            <% if (m.link) { %><a href="https://<%= m.link.replace(/^https?:\/\//, '') %>"><%= m.link %></a><% } %>
+          </p>
+        <% } %>
+        <div class="entry-body"><%- entry.html %></div>
+        <% if (m.tech) { %>
+          <ul class="tags"><% for (const t of m.tech.split(/\s*[·,|]\s*/)) { %><li><%= t %></li><% } %></ul>
+        <% } %>
+      </article>
+      <% if (i === 0) { %></div><% } %>
+    <% }) %>
+  <% } %>
+</section>

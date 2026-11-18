@@ -1,0 +1,4 @@
+{
+  "description": "Master CV: everything in profile/cv.md, single column. Exclude entries here to fit two pages.",
+  "template": "modern-single-column"
+}

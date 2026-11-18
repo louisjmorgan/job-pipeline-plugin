@@ -1,0 +1,12 @@
+{
+  "name": "job-pipeline",
+  "owner": { "name": "Louis Morgan" },
+  "metadata": { "description": "Job Pipeline plugin for Claude Code" },
+  "plugins": [
+    {
+      "name": "job-pipeline",
+      "source": "./",
+      "description": "Set up your CV and criteria, find and screen jobs, tailor applications, review drafts, learn from feedback."
+    }
+  ]
+}

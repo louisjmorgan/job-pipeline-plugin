@@ -1,0 +1,41 @@
+<%#
+  Cover letter: one A4 page with the same header and type as modern-single-column, so the
+  CV and letter read as a set. Receives: meta (cv.md frontmatter), letter { to, company, date, html },
+  styles, esc. Rendered by src/cv/letter.js.
+-%>
+<%
+  const contact = [
+    meta.email && `<a href="mailto:${esc(meta.email)}">${esc(meta.email)}</a>`,
+    meta.phone && `<a href="tel:${esc(meta.phone.replace(/\s+/g, ''))}">${esc(meta.phone)}</a>`,
+    meta.location && esc(meta.location),
+    ...(meta.links ?? []).map((l) => `<a href="${esc(l.url)}">${esc(l.label ?? l.url)}</a>`),
+  ].filter(Boolean);
+-%>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= meta.name %> — Cover letter<%= letter.company ? ` — ${letter.company}` : '' %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wdth,wght@75..100,400..700&display=swap">
+  <%- styles %>
+</head>
+<body>
+  <main class="page">
+    <header class="letter-header">
+      <h1><%= meta.name %></h1>
+      <p class="contact"><%- contact.join('<span class="sep">•</span><wbr>') %></p>
+    </header>
+
+    <p class="date"><%= letter.date %></p>
+    <p class="recipient"><%= letter.to %><% if (letter.company) { %><br><%= letter.company %><% } %></p>
+
+    <% if (letter.heading) { %><h2 class="letter-heading"><%= letter.heading %></h2><% } %>
+    <div class="letter-body"><%- letter.html %></div>
+
+    <p class="signature"><%= meta.name %></p>
+  </main>
+</body>
+</html>

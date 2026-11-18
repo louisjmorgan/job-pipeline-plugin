@@ -1,0 +1,128 @@
+<%#
+  Modern template — two columns (main + sidebar) on page 1, single column after; sans-serif.
+  Receives: cv, meta, sections, others(), variant, template, styles, esc  (see README "Template interface")
+  Column placement and order are defined HERE; unknown sections fall through to the main column.
+-%>
+<%
+  const mainOrder = ['summary', 'experience', 'projects', 'other'];
+  const sideOrder = ['skills', 'education'];
+  const pick = (ids) => ids.map((id) => sections[id]).filter(Boolean);
+  const main = [...pick(mainOrder), ...others(...mainOrder, ...sideOrder)];
+  const side = pick(sideOrder);
+-%>
+<!doctype html>
+<html lang="en"<%- side.length ? ' data-layout="pending"' : '' %>>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= meta.name %> — CV</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wdth,wght@75..100,400..700&display=swap">
+  <%- styles %>
+</head>
+<body>
+  <main class="page">
+    <header class="cv-header">
+      <div class="identity">
+        <h1><%= meta.name %></h1>
+        <% if (meta.title) { %><p class="headline"><%= meta.title %></p><% } %>
+      </div>
+      <ul class="contact">
+        <% if (meta.email) { %><li><a href="mailto:<%= meta.email %>"><%= meta.email %></a></li><% } %>
+        <% if (meta.phone) { %><li><a href="tel:<%= meta.phone.replace(/\s+/g, '') %>"><%= meta.phone %></a></li><% } %>
+        <% if (meta.location) { %><li><%= meta.location %></li><% } %>
+        <% for (const link of meta.links ?? []) { %><li><a href="<%= link.url %>"><%= link.label ?? link.url %></a></li><% } %>
+      </ul>
+    </header>
+
+    <div class="columns<%= side.length ? '' : ' columns--single' %>">
+      <div class="col-main">
+        <% for (const section of main) { %><%- include('section', { section, column: 'main' }) %><% } %>
+      </div>
+      <% if (side.length) { %>
+        <aside class="col-side">
+          <% for (const section of side) { %><%- include('section', { section, column: 'side' }) %><% } %>
+        </aside>
+      <% } %>
+    </div>
+  </main>
+  <% if (side.length) { %>
+  <script>
+    // Page 1 is two columns; whatever doesn't fit moves to a single-column continuation.
+    // Runs in the preview and in Playwright; src/pdf.js waits for data-layout to leave "pending".
+    (() => {
+      const MM = 96 / 25.4;
+      const PAGE_CONTENT_HEIGHT = 273 * MM; // A4 297mm minus the 12mm + 12mm @page margins (keep in sync with style.css)
+      const done = () => { document.documentElement.dataset.layout = 'done'; };
+
+      const following = (node) => {
+        const out = [];
+        for (let n = node.nextSibling; n; n = n.nextSibling) out.push(n);
+        return out;
+      };
+
+      // Possible page-1 cut points, each with the bottom of the content that must stay with it.
+      // Entries whose body is a bullet list (Experience) may split between bullets; the heading
+      // stays with the first bullet. Everything else (projects, sidebar entries) moves whole.
+      function cutPoints(col) {
+        const points = [];
+        const bottom = (el) => el.getBoundingClientRect().bottom;
+        for (const section of col.querySelectorAll(':scope > .section')) {
+          const entries = [...section.querySelectorAll(':scope > .entry')];
+          if (!entries.length) points.push({ node: section, bottom: bottom(section) });
+          entries.forEach((entry, i) => {
+            const node = i === 0 ? section : entry;
+            const bullets = col.classList.contains('col-main')
+              ? [...entry.querySelectorAll(':scope > .entry-body > ul:only-child > li')]
+              : [];
+            if (bullets.length > 1) {
+              points.push({ node, bottom: bottom(bullets[0]) });
+              for (const li of bullets.slice(1)) points.push({ node: li, bottom: bottom(li) });
+            } else {
+              points.push({ node, bottom: bottom(entry) });
+            }
+          });
+        }
+        return points;
+      }
+
+      // Moves `node` and everything after it inside `root` into a copy of `root`'s structure.
+      function splitOff(node, root) {
+        let cur = node;
+        let carried = [node, ...following(node)];
+        while (cur.parentNode !== root) {
+          const parent = cur.parentNode;
+          const shell = parent.cloneNode(false);
+          shell.removeAttribute('id');
+          shell.classList.add('continued');
+          shell.append(...carried);
+          carried = [shell, ...following(parent)];
+          cur = parent;
+        }
+        return carried;
+      }
+
+      function paginate() {
+        const page = document.querySelector('.page');
+        const limit = page.getBoundingClientRect().top + parseFloat(getComputedStyle(page).paddingTop) + PAGE_CONTENT_HEIGHT - 2 * MM; // small safety margin for print vs screen rounding
+        const overflow = [];
+        for (const col of document.querySelectorAll('.col-main, .col-side')) {
+          const cut = cutPoints(col).find((p) => p.bottom > limit);
+          if (cut) overflow.push(...splitOff(cut.node, col));
+        }
+        if (overflow.length) {
+          const cont = document.createElement('div');
+          cont.className = 'page page--continued';
+          cont.append(...overflow);
+          page.after(cont);
+        }
+        done();
+      }
+
+      window.addEventListener('load', () => document.fonts.ready.then(paginate).catch(done));
+    })();
+  </script>
+  <% } %>
+</body>
+</html>
