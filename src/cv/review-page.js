@@ -7,12 +7,12 @@
 //
 // The output follows the Artifact page contract: no <html>/<head>/<body> (the publisher wraps it),
 // a <title>, theme tokens for light and dark, Google Fonts only, everything else inline.
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, readdir, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 import { marked } from 'marked';
 import { readJob, daysUntil, DONE } from '../jobs/job.js';
-import { jobDir } from '../paths.js';
+import { jobDir, CV_FILE } from '../paths.js';
 import { renderCv } from './render.js';
 import { renderLetter } from './letter.js';
 
@@ -28,6 +28,41 @@ const md = (source) =>
     .replace(/\son\w+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, '')
     .replace(/<a href=/g, '<a target="_blank" rel="noreferrer" href=')
     .replace(/<input (checked="" )?disabled="" type="checkbox">/g, (m, c) => `<span class="box${c ? ' done' : ''}" aria-hidden="true"></span>`);
+
+// Built files in jobs/<id>/out/ (CV and letter PDFs, the letter's paste-ready .txt), embedded so
+// the page can hand them to the viewer: through the Artifact `downloads` capability on claude.ai,
+// or as a plain data: link when the file is opened locally.
+async function builtFiles(id) {
+  const dir = path.join(jobDir(id), 'out');
+  const names = (await readdir(dir).catch(() => [])).filter((n) => /\.(pdf|txt)$/i.test(n)).sort();
+  return Promise.all(
+    names.map(async (name) => {
+      const file = path.join(dir, name);
+      const [data, info] = await Promise.all([readFile(file), stat(file)]);
+      return { name, type: /\.pdf$/i.test(name) ? 'application/pdf' : 'text/plain', data: data.toString('base64'), built: info.mtime, size: data.length };
+    }),
+  );
+}
+
+const DRAFTS = ['variant.json', 'overlay.md', 'cover-letter.md'];
+/** The newest change to anything a build reads for this job (its drafts and the profile CV). */
+async function newestDraft(id) {
+  const files = [...DRAFTS.map((f) => path.join(jobDir(id), f)), CV_FILE];
+  const times = await Promise.all(files.map((f) => stat(f).then((s) => s.mtime.getTime(), () => 0)));
+  return Math.max(...times);
+}
+
+function downloadsBlock(id, files, newest) {
+  if (!files.length)
+    return `<div class="dl"><p class="note">No PDF built yet. Ask Claude to build it: “build the PDFs for <code>${escape(id)}</code> and republish the review page”.</p></div>`;
+  const kb = (n) => `${Math.max(1, Math.round(n / 1024))} KB`;
+  const stale = files.some((f) => /\.pdf$/i.test(f.name) && f.built.getTime() < newest - 1000);
+  const links = files
+    .map((f) => `<a class="btn" download="${escape(f.name)}" data-file="${escape(f.name)}" href="data:${f.type};base64,${f.data}">${/\.pdf$/i.test(f.name) ? 'Download' : 'Paste-ready text'} <b>${escape(f.name)}</b> <span>${kb(f.size)}</span></a>`)
+    .join('');
+  const built = new Date(Math.max(...files.map((f) => f.built.getTime()))).toISOString().slice(0, 16).replace('T', ' ');
+  return `<div class="dl">${links}<p class="note">Built ${built} UTC.${stale ? ' <b class="stale">The drafts changed after this build: ask Claude to rebuild before you send it.</b>' : ''}</p></div>`;
+}
 
 const readOptional = (id, file) => readFile(path.join(jobDir(id), file), 'utf8').catch(() => null);
 
@@ -105,6 +140,14 @@ const STYLE = `
   summary { cursor: pointer; font-weight: 600; }
   .paper { margin: 18px 0 0; background: #ffffff; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
   .doc { display: block; width: 100%; height: 1500px; border: 0; background: #ffffff; }
+  .dl { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 0; }
+  .dl .note { flex-basis: 100%; margin: 2px 0 0; }
+  .btn { display: inline-flex; gap: 6px; align-items: baseline; padding: 8px 12px; border-radius: 6px; text-decoration: none;
+    background: var(--accent); color: var(--bg); font-weight: 600; font-size: 0.9rem; }
+  .btn b { font-weight: 500; overflow-wrap: anywhere; }
+  .btn span { font: 500 0.75rem var(--mono); opacity: 0.8; }
+  .btn[aria-busy="true"] { opacity: 0.6; }
+  .stale { color: var(--warn); }
   .note { font-size: 0.85rem; color: var(--muted); margin-top: 10px; }
   footer { margin-top: 40px; padding-top: 14px; border-top: 1px solid var(--line); font-size: 0.85rem; color: var(--muted); }
   @media (max-width: 520px) { h1 { font-size: 1.35rem; } .doc { height: 1100px; } }
@@ -122,6 +165,25 @@ const SCRIPT = `
   };
   addEventListener('hashchange', show);
   show();
+  // Downloads: on claude.ai, hand the embedded file to the viewer through the downloads capability
+  // (a plain data: link is blocked in the sandbox); opened locally, the link works by itself.
+  const links = [...document.querySelectorAll('a[data-file]')];
+  if (links.length && window.claude?.use) {
+    window.claude.use('downloads').then((downloads) => {
+      if (!downloads) return;
+      for (const a of links) a.addEventListener('click', async (e) => {
+        e.preventDefault();
+        if (a.getAttribute('aria-busy') === 'true') return;
+        a.setAttribute('aria-busy', 'true');
+        try {
+          const blob = await (await fetch(a.href)).blob();
+          await downloads.save({ filename: a.dataset.file, data: blob });
+        } catch (err) {
+          if (err && err.code && !['declined', 'rate_limited'].includes(err.code)) a.title = 'Download unavailable here (' + err.code + ')';
+        } finally { a.removeAttribute('aria-busy'); }
+      });
+    }, () => {});
+  }
   // Size each embedded document to its content where the frame allows it.
   for (const f of document.querySelectorAll('iframe.doc')) {
     f.addEventListener('load', () => {
@@ -145,6 +207,8 @@ export async function reviewPage(id) {
   const questions = find(reviewParts, /^questions for you/i);
   const open = questions ? (questions.body.match(/^\s*- \[ \]/gm) ?? []).length : 0;
 
+  const [files, newest] = await Promise.all([builtFiles(id), newestDraft(id)]);
+  const downloads = downloadsBlock(id, files, newest);
   const cv = await renderCv({ job: id }).catch((err) => ({ error: err.message }));
   const letter = letterSource ? await renderLetter({ job: id }).catch((err) => ({ error: err.message })) : null;
 
@@ -162,6 +226,7 @@ export async function reviewPage(id) {
   ].join('');
 
   const overview = [
+    downloads,
     questions ? `<section class="ask"><h2>Questions for you</h2>${md(questions.body)}</section>` : '',
     ...reviewParts.filter((s) => s.heading && s !== questions).map((s) => `<h2>${escape(s.heading)}</h2>${md(s.body)}`),
     find(jobParts, /^fit$/i) ? `<h2>Fit</h2>${md(find(jobParts, /^fit$/i).body)}` : '',
@@ -175,7 +240,7 @@ export async function reviewPage(id) {
 
   const views = [
     ['overview', 'Overview', overview, open],
-    ['cv', 'CV', cv.error ? `<p>The CV didn't render: ${escape(cv.error)}</p>` : `<div class="paper">${frame(cv.html, 'CV')}</div><p class="note">The tailored CV in its real template. The PDF is built locally with <code>jp build --job=${escape(id)}</code>.</p>`],
+    ['cv', 'CV', cv.error ? `<p>The CV didn't render: ${escape(cv.error)}</p>` : `${downloads}<div class="paper">${frame(cv.html, 'CV')}</div><p class="note">The tailored CV in its real template.</p>`],
     letter && ['letter', 'Cover letter', letter.error ? `<p>The letter didn't render: ${escape(letter.error)}</p>` : `<div class="paper">${frame(letter.html, 'Cover letter')}</div>`],
     answers && ['answers', 'Answers', md(answers)],
     ['listing', 'Listing', listingView],

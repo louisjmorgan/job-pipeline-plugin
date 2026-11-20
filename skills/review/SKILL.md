@@ -14,9 +14,16 @@ none, list jobs at `drafted` (`jp jobs --status=drafted`) and ask which.
 
 ## 1. Generate the page
 
+Build the PDFs first, so the page carries the current ones, then generate it:
+
 ```bash
+jp build --job=<id>
 jp review <id> --out=<scratchpad or temp dir>/<id>-review.html
 ```
+
+The page embeds whatever is in `jobs/<id>/out/` (CV and letter PDFs, the letter's `.txt`) as
+**Download** buttons, which is how the user gets the files when they work only in the browser. If
+the build fails (no Chromium), generate the page anyway: it says no PDF is built yet.
 
 It prints the file path. The page is self-contained (the CV and cover letter are embedded in their
 real templates) and already follows the Artifact page contract, so publish it as it is. Don't
@@ -25,6 +32,9 @@ hand-edit the HTML: to change what it shows, change the job's files and generate
 ## 2. Publish or update
 
 Read `review_url:` in `jobs/<id>/job.md`.
+
+Always pass `capabilities: {"downloads": true}` when publishing, new or update: without it the
+Download buttons can't save on claude.ai.
 
 - **No `review_url`:** publish the file with the Artifact tool (`icon: "briefcase"`, a one-line
   `description`: "<Company> <Title> application: pitch, open questions, tailored CV and answers").

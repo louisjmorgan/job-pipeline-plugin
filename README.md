@@ -20,6 +20,10 @@ emails or fills in a form for you.**
 Needs Node 20+. The first command that needs them installs the plugin's dependencies (including
 a headless Chromium for PDFs) into `~/.cache/job-pipeline`, once.
 
+## Browser only (no install)
+
+Everything can run on claude.ai, with nothing installed: see [WEB.md](WEB.md).
+
 ## Get started
 
 Open Claude Code in an empty folder (it becomes your **workspace**: keep it private, e.g. a
@@ -127,7 +131,7 @@ supported yet: copy an existing `job.md`'s frontmatter and paste the listing und
 
 ### Tailoring: `/job-pipeline:tailor <id>`
 
-In Claude Code, `/job-pipeline:tailor <id>` runs the skill in `.claude/skills/tailor/SKILL.md`. It:
+`/job-pipeline:tailor <id>` runs the plugin's `skills/tailor/SKILL.md`. It:
 
 1. writes `requirements.md` (criteria → evidence, written questions, gaps, do-not-claim)
 2. scores fit in `job.md` (stops at 2/5 or below)

@@ -13,6 +13,22 @@ criteria → search (`/job-pipeline:find-jobs`) → tailored CV, answers and let
   drafts: `jp build --job=<id>` and `jp lint <id>`, then republish its review page if it has one
   (`review_url` in job.md), then commit.
 
+## In a claude.ai cloud session (browser)
+
+Cloud sessions don't install plugins, so the `/job-pipeline:*` commands aren't there. The plugin
+repo (job-pipeline-plugin) is checked out next to this one instead: find it with
+`find / -maxdepth 4 -name plugin.json -path '*job-pipeline-plugin/.claude-plugin/*' 2>/dev/null`
+(its parent folder is the plugin root). Then:
+- "find jobs", "tailor <id>", "review <id>", "learn", "cv style", "set up": follow
+  `<plugin root>/skills/<name>/SKILL.md` (find-jobs, tailor, review, learn, cv-style, setup),
+  reading `${CLAUDE_PLUGIN_ROOT}` as the plugin root.
+- `jp` means `node <plugin root>/src/jp.js`. It installs its own dependencies on first run.
+- Job board API keys come from the environment's variables. Never write them into a file.
+- Commit and push to `main` when a piece of work is done (`git pull --rebase origin main` first),
+  so scheduled runs and the next session see it.
+- The user gets PDFs from the **Download** buttons on each job's review page, so publish or
+  republish it after any change to a job's drafts.
+
 ## Learning from feedback
 
 The user reviews drafts mostly by giving feedback in chat, often while reading the job's review

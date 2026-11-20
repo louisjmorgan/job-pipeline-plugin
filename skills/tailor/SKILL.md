@@ -151,7 +151,7 @@ Closes <date>. Score <n>/5. Apply at <apply_url>.
 - [ ] <facts that would strengthen it, things only the user knows>
 
 ## Before you send
-- [ ] Read the CV PDF: jobs/<id>/out/<Name>-CV.pdf
+- [ ] Read the CV PDF (Download on the review page, or jobs/<id>/out/<Name>-CV.pdf)
 - [ ] Read answers.md and fill the "You fill in" fields
 - [ ] (letter) jobs/<id>/out/<Name>-Cover-Letter.pdf
 - [ ] When you're happy, tell Claude "approved"; after you've sent it, "applied" (Claude runs `jp set <id> approved|applied`)
