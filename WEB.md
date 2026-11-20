@@ -23,8 +23,8 @@ so keep it **private**.
    and *license* set to none.
 3. Click **Create repository**.
 
-If you were invited to the plugin repo (`louisjmorgan/job-pipeline-plugin`), accept the invite
-from your email or https://github.com/notifications.
+The plugin's code (`louisjmorgan/job-pipeline-plugin`) is public. Sessions fetch it themselves,
+so you don't need to do anything with it.
 
 ## 2. Claude: connect GitHub
 
@@ -61,28 +61,28 @@ Don't paste keys into the chat.
 
 ## 5. First session: set up your profile
 
-1. On https://claude.ai/code, start a new session with:
-   - **repositories**: `job-search` **and** `louisjmorgan/job-pipeline-plugin` (add both in the
-     repository selector),
-   - **environment**: `job-search`.
-2. Send:
+1. On https://claude.ai/code, start a new session with repository **`job-search`** and
+   environment **`job-search`**.
+2. Send this (the commands don't exist in your repo yet, so the first time you spell it out):
 
-   > Set up my job search in the job-search repo by following the setup skill in the
-   > job-pipeline-plugin repo (skills/setup/SKILL.md; jp means node <plugin repo>/src/jp.js).
-   > Make the job-search repo's root the workspace (jp init .). My API keys are in the
-   > environment variables. When we're done, commit and push to main.
+   > Clone https://github.com/louisjmorgan/job-pipeline-plugin to ~/job-pipeline-plugin, then set
+   > up my job search by following its skills/setup/SKILL.md (CLAUDE_PLUGIN_ROOT means
+   > ~/job-pipeline-plugin; jp means node ~/job-pipeline-plugin/src/jp.js). Make this repo's root
+   > the workspace (jp init .). My API keys are in the environment variables, not a .env file.
+   > Commit and push to main as we go.
 
 3. Answer its questions. Paste your CV when it asks. It also asks about your evidence and stories,
    anything you must never claim, and what you're looking for: roles, salary floor, location,
    work pattern.
 4. It builds a first CV. Check it and ask for changes.
 
-After this, the repo's `CLAUDE.md` tells every later session how to use the plugin, so short
-requests work.
+Setup adds the commands to your repo (`.claude/skills/`). From your next session on, `/find-jobs`,
+`/tailor`, `/review` and the rest show up as commands, and plain requests like "find jobs" work too.
 
 ## 6. Day to day
 
-Start each session the same way: **both repos, the `job-search` environment**. Then just ask:
+Start each session the same way, with repository `job-search` and environment `job-search`. Then
+just ask, or use the command:
 
 | Say | What happens |
 | --- | --- |
@@ -107,7 +107,7 @@ Routines run the search (and tailoring) on a schedule while you're away. The res
 in the next session and on the board.
 
 1. Go to https://claude.ai/code/routines → new routine.
-2. Repositories: `job-search` and `louisjmorgan/job-pipeline-plugin`. Environment: `job-search`.
+2. Repository: `job-search`. Environment: `job-search`.
    Model: Sonnet.
 3. Prompt: copy
    [skills/schedule/routine-prompt.md](skills/schedule/routine-prompt.md) and replace
@@ -124,8 +124,14 @@ claude.ai after the first few runs and cut back if needed.
 
 ## If something goes wrong
 
-- **"Repository not found" or access errors**: the Claude GitHub App isn't allowed on that repo
-  (step 2.3). For the plugin repo, make sure you accepted the invite.
+- **"Repository not found" or access errors**: the Claude GitHub App isn't allowed on
+  `job-search` (step 2.3).
+- **No `/tailor` etc. commands**: your repo has no `.claude/skills/` folder, e.g. because it was
+  set up before they existed. Say: "Clone https://github.com/louisjmorgan/job-pipeline-plugin to
+  ~/job-pipeline-plugin, run node ~/job-pipeline-plugin/src/jp.js init . to add the missing files,
+  replace the 'In a claude.ai cloud session' section of CLAUDE.md with the one in
+  ~/job-pipeline-plugin/workspace-template/CLAUDE.md, then commit and push to main." Then start a
+  new session.
 - **Jobs fail to load, 403 errors**: the environment's network access isn't Full (step 3).
 - **"skipped (set REED_API_KEY)"** in a search summary: the key isn't in the environment (step 4).
 - **No Download button, or "No PDF built yet"**: say "build the PDFs for &lt;job id&gt; and

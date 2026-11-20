@@ -15,14 +15,13 @@ criteria → search (`/job-pipeline:find-jobs`) → tailored CV, answers and let
 
 ## In a claude.ai cloud session (browser)
 
-Cloud sessions don't install plugins, so the `/job-pipeline:*` commands aren't there. The plugin
-repo (job-pipeline-plugin) is checked out next to this one instead: find it with
-`find / -maxdepth 4 -name plugin.json -path '*job-pipeline-plugin/.claude-plugin/*' 2>/dev/null`
-(its parent folder is the plugin root). Then:
-- "find jobs", "tailor <id>", "review <id>", "learn", "cv style", "set up": follow
-  `<plugin root>/skills/<name>/SKILL.md` (find-jobs, tailor, review, learn, cv-style, setup),
-  reading `${CLAUDE_PLUGIN_ROOT}` as the plugin root.
-- `jp` means `node <plugin root>/src/jp.js`. It installs its own dependencies on first run.
+Cloud sessions don't install plugins, so the `/job-pipeline:*` commands aren't there. Instead,
+`.claude/skills/` in this repo holds a pointer skill for each one (`/find-jobs`, `/tailor`,
+`/review`, `/learn`, `/cv-style`, `/setup`, `/schedule`). Each clones the plugin to
+`~/job-pipeline-plugin` (`git clone --depth 1 https://github.com/louisjmorgan/job-pipeline-plugin`)
+and follows its real skill. Then:
+- `jp` means `node ~/job-pipeline-plugin/src/jp.js` (full path), run from this workspace. It
+  installs its own dependencies on first run.
 - Job board API keys come from the environment's variables. Never write them into a file.
 - Commit and push to `main` when a piece of work is done (`git pull --rebase origin main` first),
   so scheduled runs and the next session see it.
